@@ -73,9 +73,23 @@ $.ajax(settings).done(function (response) {
 Welcome to Zaal API! You can use our API to access Zaal API endpoints.
 Zaal is a Natural Language Processing (NLP) service for real world applciations. The first NLP service for Persian Laguage. 
 
-Persian language could be considered a major langauge in the family of Indo-Eaurpean languages where its native speakers and people who speak Persian as a second lanaguge add up to 110M people. Despite the vast population of Persian speakers there are not many resources for processing Persian documents in the field of Natural Language Processing (NLP). With this incentive we at Miras decided to start a project aiming at provinding an NLP web service with real world applicatons.
+Persian language could be considered a major langauge in the family of Indo-Eaurpean languages where its native speakers and people who speak Persian as a second lanaguge add up to 110M people. Despite the vast population of Persian speakers there are not many resources for processing Persian documents in the field of Natural Language Processing (NLP). With this incentive we at Miras decided to start a project aiming at provinding an NLP web service with real world applicatons. 
 
+Zaal currently supprots the following tasks:
+<ul>
+  <li>Document Classifier</li>
+  <li>Document Level Sentiment Analysis</li>
+  <li>Aspect Based Sentiment Analysis</li>
+  <li>Similar Word Suggester</li>
+  <li>Keyword Extractor</li>
+</ul>
 
+And we plan to support these tasks in the upcoming version:
+<ul>
+  <li>Event Extractor</li>
+  <li>Named Entity Recognizer</li>
+  <li>Summarizer</li>
+</ul>
 
 # RESTful API
 
@@ -102,6 +116,188 @@ Parameter | Description
 ‪METHOD | The method used for the given arguments.
 ARGUMENTS | Inputs for METHOD.
 
+## Document Classifier
+
+```ruby
+require 'uri'
+require 'net/http'
+
+url = URI("http://localhost:9091/Zaal/api")
+
+http = Net::HTTP.new(url.host, url.port)
+
+request = Net::HTTP::Post.new(url)
+request["Content-Type"] = 'application/json'
+request.body = "{\n   \"method\":\"document_classifier\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
+
+response = http.request(request)
+puts response.read_body
+```
+
+```python
+import requests
+
+url = "http://localhost:9091/Zaal/api"
+
+payload = "{\n   \"method\":\"document_classifier\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
+headers = {'Content-Type': 'application/json'}
+
+response = requests.request("POST", url, data=payload, headers=headers)
+
+print(response.text)
+```
+
+```shell
+curl --request POST \
+  --url http://localhost:9091/Zaal/api \
+  --header 'Content-Type: application/json' \
+  --data '{
+   "method":"document_classifier",
+   "args":{
+      "document":"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند "
+   }
+}'
+```
+
+```javascript
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:9091/Zaal/api",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "processData": false,
+  "data": "{\n   \"method\":\"document_classifier\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+});
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+    "results": {
+        "pay_load": {
+            "Culture_Art": 0,
+            "Politics_Internal": 0.1203,
+            "Sports": 0.0078,
+            "Entertainment": 0,
+            "Social_Security": 0,
+            "Social_Family": 0,
+            "Industry_Banking": 0,
+            "Culture_Tourism": 0,
+            "Culture_Religion": 0.4811,
+            "Economy": 0,
+            "Industry_Technology": 0,
+            "Industry_Production": 0,
+            "Industry_Transportation": 0,
+            "Industry_Real State": 0,
+            "Social_Education": 0,
+            "Industry_Automoblie Manufacturing": 0,
+            "Industry_Insurance": 0,
+            "Politics_Foreign": 0.0697,
+            "Social_Urban": 0,
+            "Medical": 0
+        },
+        "status": "success"
+    }
+}
+```
+
+A document as a in news articles can be classified based the different topics it addresses. In Zaal we use a multi-label classifcation where each document can be assinged a set of problaistic scores representing the possiblities of belonging to various classes.
+
+Supported classes are:
+<table class="table table-striped table-bordered" style="margin-left: auto; margin-right: auto;">
+<tbody>
+<tr>
+<th style="text-align: center;">Industry</th>
+<th style="text-align: center;">Politics</th>
+<th style="text-align: center;">Culture</th>
+<th style="text-align: center;">Social</th>
+<th style="text-align: center;">Sports</th>
+<th style="text-align: center;">Entertainment</th>
+<th style="text-align: center;">Economy</th>
+<th style="text-align: center;">Medical</th>
+</tr>
+<tr style="text-align: center;">
+<td>Insurance</td>
+<td>Internal</td>
+<td>Tourism</td>
+<td>Education</td>
+<td>Sports</td>
+<td>Entertainment</td>
+<td>Economy</td>
+<td>Medical</td>
+</tr>
+<tr style="text-align: center;">
+<td>Transportation</td>
+<td>Foreign</td>
+<td>Art</td>
+<td>Urban</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr style="text-align: center;">
+<td>Production</td>
+<td>&nbsp;</td>
+<td>Religion</td>
+<td>Security</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr style="text-align: center;">
+<td>Automoblie Manufacturing</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>Family</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr style="text-align: center;">
+<td>Banking</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr style="text-align: center;">
+<td>Real State</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr style="text-align: center;">
+<td>Technology</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+
+We are working on a mechanism for the user to define custom classes which will be released in the upcomming version.
 
 ## Ducument Level Sentiment Analysis
 
@@ -259,101 +455,6 @@ $.ajax(settings).done(function (response) {
 There could be mutiple segments of a document where each segment has its own sentiment score. This happens  whenever there are various aspects of an entity or a concept in a document. For example a comment about a new Samsung cellphone could contain a compelment about its colour and also some complaints about its high price.  
 
 
-## Document Classifier
-
-```ruby
-require 'uri'
-require 'net/http'
-
-url = URI("http://localhost:9091/Zaal/api")
-
-http = Net::HTTP.new(url.host, url.port)
-
-request = Net::HTTP::Post.new(url)
-request["Content-Type"] = 'application/json'
-request.body = "{\n   \"method\":\"document_classifier\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
-
-response = http.request(request)
-puts response.read_body
-```
-
-```python
-import requests
-
-url = "http://localhost:9091/Zaal/api"
-
-payload = "{\n   \"method\":\"document_classifier\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
-headers = {'Content-Type': 'application/json'}
-
-response = requests.request("POST", url, data=payload, headers=headers)
-
-print(response.text)
-```
-
-```shell
-curl --request POST \
-  --url http://localhost:9091/Zaal/api \
-  --header 'Content-Type: application/json' \
-  --data '{
-   "method":"document_classifier",
-   "args":{
-      "document":"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند "
-   }
-}'
-```
-
-```javascript
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:9091/Zaal/api",
-  "method": "POST",
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "processData": false,
-  "data": "{\n   \"method\":\"document_classifier\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
-}
-
-$.ajax(settings).done(function (response) {
-  console.log(response);
-});
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-    "results": {
-        "pay_load": {
-            "Culture_Art": 0,
-            "Politics_Internal": 0.1203,
-            "Sports": 0.0078,
-            "Entertainment": 0,
-            "Social_Security": 0,
-            "Social_Family": 0,
-            "Industry_Banking": 0,
-            "Culture_Tourism": 0,
-            "Culture_Religion": 0.4811,
-            "Economy": 0,
-            "Industry_Technology": 0,
-            "Industry_Production": 0,
-            "Industry_Transportation": 0,
-            "Industry_Real State": 0,
-            "Social_Education": 0,
-            "Industry_Automoblie Manufacturing": 0,
-            "Industry_Insurance": 0,
-            "Politics_Foreign": 0.0697,
-            "Social_Urban": 0,
-            "Medical": 0
-        },
-        "status": "success"
-    }
-}
-```
-
-A document as a in news articles can be classified based the different topics it addresses. In Zaal we use a multi-label classifcation where each document can be assinged a set of problaistic scores representing the possiblities of belonging to various classes.
-
 ## Word Suggester
 
 ```ruby
@@ -439,4 +540,81 @@ $.ajax(settings).done(function (response) {
 ```
 
 One application of NLP is to extract synonyms of a word. Using this method you could get the k-nearest words similar to your word. 
+
+## Keyword Extractor
+
+```ruby
+require 'uri'
+require 'net/http'
+
+url = URI("http://localhost:9091/Zaal/api")
+
+http = Net::HTTP.new(url.host, url.port)
+
+request = Net::HTTP::Post.new(url)
+request["Content-Type"] = 'application/json'
+request.body = "{\n   \"method\":\"keyword_extractor\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
+
+response = http.request(request)
+puts response.read_body
+```
+
+```python
+import requests
+
+url = "http://localhost:9091/Zaal/api"
+
+payload = "{\n   \"method\":\"keyword_extractor\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
+headers = {'Content-Type': 'application/json'}
+
+response = requests.request("POST", url, data=payload, headers=headers)
+
+print(response.text)
+```
+
+```shell
+curl --request POST \
+  --url http://localhost:9091/Zaal/api \
+  --header 'Content-Type: application/json' \
+  --data '{
+   "method":"keyword_extractor",
+   "args":{
+      "document":"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند "
+   }
+}'
+```
+
+```javascript
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:9091/Zaal/api",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "processData": false,
+  "data": "{\n   \"method\":\"keyword_extractor\",\n   \"args\":{\n      \"document\":\"رهبر انقلاب در دیدار با اعضایشورای عالی انقلاب فرهنگی، بر ضرورت تبیین مسیر دقیق فرهتگ تاکید کردند \"\n   }\n}"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+});
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+    "results": {
+        "pay_load": {
+            "انقلاب": 0.0191,
+            "شورای": 0.0084,
+        },
+        "status": "success"
+    }
+}
+```
+
+Keyword extractor (as the name suggests) extracts the most important words from a given text. This method extracts keywords and an importance score associated with each keyword from text.
 
